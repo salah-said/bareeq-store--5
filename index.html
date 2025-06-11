@@ -1,0 +1,1265 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>بريق</title>
+  <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.25.6/babel.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/i18next@23.2.11/dist/umd/i18next.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/react-i18next@13.0.0/dist/umd/react-i18next.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Cairo', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      scroll-behavior: smooth;
+      margin: 0;
+      padding: 0;
+      background-color: #f7fafc;
+    }
+    .product-card {
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      overflow: hidden;
+      background: #ffffff;
+      border: none;
+      border-radius: 8px;
+    }
+    .product-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    }
+    .dark .product-card {
+      background: #1a202c;
+    }
+    .product-image-container {
+      height: 12rem;
+      overflow: hidden;
+      position: relative;
+    }
+    .product-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 8px 8px 0 0;
+      transition: transform 0.3s ease;
+    }
+    .product-card:hover .product-image {
+      transform: scale(1.05);
+    }
+    .sidebar {
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    .sidebar::-webkit-scrollbar {
+      display: none;
+    }
+    aside {
+      position: fixed;
+      top: 0;
+      width: 80%;
+      max-width: 320px;
+      height: 100%;
+      padding: 1rem;
+      overflow-y: auto;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease-in-out;
+      z-index: 50;
+    }
+    .rtl aside {
+      left: 0;
+      transform: translateX(-100%);
+    }
+    .rtl aside.translate-x-0 {
+      transform: translateX(0);
+    }
+    .ltr aside {
+      right: 0;
+      transform: translateX(100%);
+    }
+    .ltr aside.translate-x-0 {
+      transform: translateX(0);
+    }
+    @media (min-width: 1024px) {
+      aside {
+        position: static;
+        transform: none !important;
+        width: 16rem;
+      }
+    }
+    .cart-badge {
+      position: absolute;
+      top: -6px;
+      left: -6px;
+      background-color: #ef4444;
+      color: white;
+      border-radius: 50%;
+      width: 18px;
+      height: 18px;
+      font-size: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .sale-tag {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      background-color: #ef4444;
+      color: white;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      z-index: 10;
+    }
+    .star-rating {
+      direction: ltr;
+      display: inline-flex;
+    }
+    .fade-in {
+      animation: fadeIn 0.5s ease-out forwards;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .loading-spinner {
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top: 3px solid #2563eb;
+      width: 28px;
+      height: 28px;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .toast {
+      position: fixed;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #1a202c;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 6px;
+      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+      z-index: 1000;
+      animation: slideIn 0.3s ease-out, slideOut 0.3s ease-in 2.5s forwards;
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(-50%) translateY(16px); }
+      to { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+    @keyframes slideOut {
+      from { opacity: 1; transform: translateX(-50%) translateY(0); }
+      to { opacity: 0; transform: translateX(-50%) translateY(16px); }
+    }
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background-color: #ffffff;
+      border-top: 1px solid #e5e7eb;
+      display: flex;
+      justify-content: space-around;
+      padding: 0.5rem 0;
+      z-index: 40;
+    }
+    .dark .bottom-nav {
+      background-color: #1a202c;
+      border-top-color: #374151;
+    }
+    @media (min-width: 768px) {
+      .bottom-nav {
+        display: none;
+      }
+    }
+    .rtl { direction: rtl; }
+    .ltr { direction: ltr; }
+    .delivery-form {
+      margin-top: 1rem;
+      padding: 1rem;
+      background-color: #f9fafb;
+      border-radius: 0.5rem;
+    }
+    .delivery-form label {
+      display: block;
+      margin-bottom: 0.25rem;
+      font-weight: 600;
+    }
+    .delivery-form input,
+    .delivery-form select {
+      width: 100%;
+      padding: 0.5rem;
+      margin-bottom: 0.75rem;
+      border: 1px solid #d1d5db;
+      border-radius: 0.375rem;
+      font-size: 0.875rem;
+    }
+    .delivery-form button {
+      width: 100%;
+      padding: 0.5rem;
+      background-color: #3b82f6;
+      color: white;
+      border: none;
+      border-radius: 0.375rem;
+      font-size: 0.875rem;
+      cursor: pointer;
+    }
+    .delivery-form button:hover {
+      background-color: #2563eb;
+    }
+    .video-container {
+      position: relative;
+      width: 100%;
+      height: 0;
+      padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+      overflow: hidden;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      margin-bottom: 2rem;
+    }
+    .video-container video {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .header-logo {
+      font-size: 1.5rem;
+      font-weight: 700;
+      background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .section-title {
+      position: relative;
+      padding-bottom: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .section-title:after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 60px;
+      height: 3px;
+      background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+      border-radius: 3px;
+    }
+    .rtl .section-title:after {
+      right: 0;
+      left: auto;
+    }
+    .feature-card {
+      border-radius: 12px;
+      padding: 1.5rem;
+      text-align: center;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+    .feature-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+    }
+    .feature-icon {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .whatsapp-button {
+      background-color: #25D366;
+      color: white;
+      margin-top: 8px;
+    }
+    .whatsapp-button:hover {
+      background-color: #128C7E;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    window.addEventListener('error', (e) => console.error('Detailed error:', e));
+  </script>
+  <script type="text/babel">
+    try {
+      const { useState, useEffect, useCallback, useMemo } = React;
+      const { useTranslation, initReactI18next } = ReactI18next;
+
+      i18next
+        .use(initReactI18next)
+        .init({
+          resources: {
+            ar: {
+              translation: {
+                title: "بريق",
+                allCategories: "جميع الأقسام",
+                searchPlaceholder: "ابحث عن منتجات...",
+                cart: "سلة التسوق",
+                emptyCart: "سلة التسوق فارغة",
+                continueShopping: "متابعة التسوق",
+                checkout: "إتمام الشراء",
+                orderViaWhatsApp: "أطلب عبر واتساب",
+                categories: "الأقسام",
+                priceRange: "نطاق السعر",
+                minPrice: "الحد الأدنى",
+                maxPrice: "الحد الأقصى",
+                sortBy: "ترتيب حسب",
+                sortDefault: "الافتراضي",
+                sortPriceLow: "السعر: الأقل إلى الأعلى",
+                sortPriceHigh: "السعر: الأعلى إلى الأقل",
+                sortRating: "التقييم",
+                sortFeatured: "المميز",
+                inStock: "متوفر",
+                outOfStock: "غير متوفر",
+                addToCart: "أضف إلى السلة",
+                remove: "إزالة",
+                total: "المجموع",
+                shippingNote: "الشحن والضرائب تُحسب عند الدفع.",
+                noProducts: "لا توجد منتجات مطابقة",
+                resetFilters: "إعادة تعيين الفلاتر",
+                aboutTitle: "عن بريق",
+                aboutText1: "بريق يقدم منتجات فاخرة بتصاميم عصرية تناسب كل الأذواق.",
+                aboutText2: "نسعى لتقديم تجربة تسوق مميزة مع خدمة عملاء استثنائية.",
+                contactTitle: "تواصل معنا",
+                namePlaceholder: "اسمك",
+                emailPlaceholder: "بريدك الإلكتروني",
+                messagePlaceholder: "رسالتك",
+                sendMessage: "إرسال",
+                messageSent: "تم إرسال الرسالة! سنتواصل معك قريبًا.",
+                followUs: "تابعنا",
+                quickLinks: "روابط سريعة",
+                home: "الرئيسية",
+                shop: "التسوق",
+                about: "عن بريق",
+                contact: "تواصل",
+                customerService: "خدمة العملاء",
+                faq: "الأسئلة الشائعة",
+                shippingPolicy: "سياسة الشحن",
+                returns: "الإرجاع",
+                privacy: "الخصوصية",
+                newsletter: "النشرة الإخبارية",
+                newsletterText: "اشترك للحصول على العروض الحصرية.",
+                subscribe: "اشتراك",
+                footerText: "© {{year}} بريق. جميع الحقوق محفوظة.",
+                addedToCart: "تمت إضافة {{name}} إلى السلة",
+                addedToWishlist: "تمت إضافة {{name}} إلى المفضلة",
+                removedFromWishlist: "تمت إزالة {{name}} من المفضلة",
+                fastShipping: "شحن سريع",
+                fastShippingText: "توصيل سريع وموثوق لجميع طلباتك.",
+                securePayment: "دفع آمن",
+                securePaymentText: "خيارات دفع آمنة وسهلة.",
+                easyReturns: "إرجاع سهل",
+                easyReturnsText: "سياسة إرجاع مرنة لراحتك.",
+                perfumes: "عطور",
+                watches: "ساعات",
+                accessories: "إكسسوارات",
+                delivery: "توصيل",
+                address: "العنوان",
+                city: "المدينة",
+                postalCode: "الرمز البريدي",
+                phone: "رقم الهاتف",
+                newsOffers: "أرسل لي الأخبار والعروض",
+                placeOrder: "تأكيد الطلب",
+                sale: "عرض",
+                whatsappOrder: "طلب عبر واتساب"
+              }
+            },
+            en: {
+              translation: {
+                title: "Bareeq",
+                allCategories: "All Categories",
+                searchPlaceholder: "Search products...",
+                cart: "Cart",
+                emptyCart: "Your cart is empty",
+                continueShopping: "Continue Shopping",
+                checkout: "Checkout",
+                orderViaWhatsApp: "Order via WhatsApp",
+                categories: "Categories",
+                priceRange: "Price Range",
+                minPrice: "Minimum",
+                maxPrice: "Maximum",
+                sortBy: "Sort By",
+                sortDefault: "Default",
+                sortPriceLow: "Price: Low to High",
+                sortPriceHigh: "Price: High to Low",
+                sortRating: "Rating",
+                sortFeatured: "Featured",
+                inStock: "In Stock",
+                outOfStock: "Out of Stock",
+                addToCart: "Add to Cart",
+                remove: "Remove",
+                total: "Total",
+                shippingNote: "Shipping and taxes calculated at checkout.",
+                noProducts: "No products found",
+                resetFilters: "Reset Filters",
+                aboutTitle: "About Bareeq",
+                aboutText1: "Bareeq offers luxury products with modern designs for all tastes.",
+                aboutText2: "We aim to provide a unique shopping experience with exceptional service.",
+                contactTitle: "Contact Us",
+                namePlaceholder: "Your Name",
+                emailPlaceholder: "Your Email",
+                messagePlaceholder: "Your Message",
+                sendMessage: "Send",
+                messageSent: "Message sent! We'll reach out soon.",
+                followUs: "Follow Us",
+                quickLinks: "Quick Links",
+                home: "Home",
+                shop: "Shop",
+                about: "About",
+                contact: "Contact",
+                customerService: "Customer Service",
+                faq: "FAQ",
+                shippingPolicy: "Shipping Policy",
+                returns: "Returns",
+                privacy: "Privacy Policy",
+                newsletter: "Newsletter",
+                newsletterText: "Subscribe for exclusive offers.",
+                subscribe: "Subscribe",
+                footerText: "© {{year}} Bareeq. All rights reserved.",
+                addedToCart: "{{name}} added to cart",
+                addedToWishlist: "{{name}} added to wishlist",
+                removedFromWishlist: "{{name}} removed from wishlist",
+                fastShipping: "Fast Shipping",
+                fastShippingText: "Quick and reliable delivery for all orders.",
+                securePayment: "Secure Payment",
+                securePaymentText: "Safe and easy payment options.",
+                easyReturns: "Easy Returns",
+                easyReturnsText: "Flexible return policy for your convenience.",
+                perfumes: "Perfumes",
+                watches: "Watches",
+                accessories: "Accessories",
+                delivery: "Delivery",
+                address: "Address",
+                city: "City",
+                postalCode: "Postal Code",
+                phone: "Phone",
+                newsOffers: "Text me with news and offers",
+                placeOrder: "Place Order",
+                sale: "Sale",
+                whatsappOrder: "Order via WhatsApp"
+              }
+            }
+          },
+          lng: "ar",
+          fallbackLng: "ar",
+          interpolation: { escapeValue: false }
+        });
+
+      // نظام التصنيف الهرمي
+      const categoriesHierarchy = {
+        ar: {
+          "الكل": ["الكل"],
+          "عطور": ["عطور رجالي", "عطور حريمي", "عطور نيش", "عطور ديزاينر"],
+          "ساعات": ["ساعات رجالي", "ساعات حريمي", "ساعات أطفال"],
+          "إكسسوارات": ["إكسسوارات"]
+        },
+        en: {
+          "All": ["All"],
+          "Perfumes": ["Men's Perfumes", "Women's Perfumes", "Niche Perfumes", "Designer Perfumes"],
+          "Watches": ["Men's Watches", "Women's Watches", "Kids' Watches"],
+          "Accessories": ["Accessories"]
+        }
+      };
+
+      const categories = ["الكل", "عطور", "ساعات", "إكسسوارات"];
+      const categoriesEn = ["All", "Perfumes", "Watches", "Accessories"];
+
+      const initialProducts = [
+        { id: 1, name: "ساعة جلد كلاسيكية", nameEn: "Classic Leather Watch", category: "ساعات", subCategory: "ساعات رجالي", subCategoryEn: "Men's Watches", price: 312.50, originalPrice: 437.50, description: "ساعة أنيقة من الفولاذ المقاوم للصدأ مع سوار جلد.", descriptionEn: "Elegant stainless steel watch with leather strap.", image: "images/1.jpg", rating: 4.5, reviews: 24, inStock: true, featured: true },
+        { id: 2, name: "عطر رويال عود", nameEn: "Royal Oud Perfume", category: "عطور", subCategory: "عطور نيش", subCategoryEn: "Niche Perfumes", price: 375.00, originalPrice: 562.50, description: "عطر فاخر طويل الأمد بروائح خشبية.", descriptionEn: "Luxurious long-lasting perfume with woody notes.", image: "images/2.jpg", rating: 4.8, reviews: 32, inStock: true, featured: true },
+        { id: 3, name: "ساعة أنوثة", nameEn: "Femininity Watch", category: "ساعات", subCategory: "ساعات حريمي", subCategoryEn: "Women's Watches", price: 625.00, description: "ساعة نسائية عصرية بلمسات ذهبية وردية.", descriptionEn: "Modern women's watch with rose gold accents.", image: "images/3.jpg", rating: 4.7, reviews: 29, inStock: true, featured: true },
+        { id: 4, name: "ساعة رياضية", nameEn: "Sports Watch", category: "ساعات", subCategory: "ساعات رجالي", subCategoryEn: "Men's Watches", price: 250.00, description: "ساعة رياضية مقاومة للماء مع تصميم عصري.", descriptionEn: "Water-resistant sports watch with modern design.", image: "images/4.jpg", rating: 4.2, reviews: 15, inStock: true, featured: false },
+        { id: 5, name: "عطر فلورال", nameEn: "Floral Perfume", category: "عطور", subCategory: "عطور حريمي", subCategoryEn: "Women's Perfumes", price: 450.00, originalPrice: 600.00, description: "عطر زهري منعش بروائح طبيعية.", descriptionEn: "Refreshing floral perfume with natural notes.", image: "images/5.jpg", rating: 4.6, reviews: 20, inStock: true, featured: true },
+        { id: 6, name: "ساعة ذهبية فاخرة", nameEn: "Luxury Gold Watch", category: "ساعات", subCategory: "ساعات حريمي", subCategoryEn: "Women's Watches", price: 800.00, description: "ساعة نسائية فاخرة بتصميم ذهبي أنيق.", descriptionEn: "Luxury women's watch with elegant gold design.", image: "images/6.jpg", rating: 4.9, reviews: 35, inStock: true, featured: true },
+        { id: 7, name: "عطر خشبي شرقي", nameEn: "Oriental Woody Perfume", category: "عطور", subCategory: "عطور ديزاينر", subCategoryEn: "Designer Perfumes", price: 320.00, description: "عطر شرقي بروائح خشبية دافئة.", descriptionEn: "Oriental perfume with warm woody notes.", image: "images/7.jpg", rating: 4.3, reviews: 18, inStock: false, featured: false },
+        { id: 8, name: "ساعة كرونوغراف", nameEn: "Chronograph Watch", category: "ساعات", subCategory: "ساعات رجالي", subCategoryEn: "Men's Watches", price: 550.00, originalPrice: 750.00, description: "ساعة كرونوغراف متعددة الوظائف.", descriptionEn: "Multi-functional chronograph watch.", image: "images/8.jpg", rating: 4.4, reviews: 22, inStock: true, featured: true },
+        { id: 9, name: "ساعة ذكية", nameEn: "Smart Watch", category: "ساعات", subCategory: "ساعات أطفال", subCategoryEn: "Kids' Watches", price: 900.00, description: "ساعة ذكية بميزات متقدمة.", descriptionEn: "Smart watch with advanced features.", image: "images/9.jpg", rating: 4.7, reviews: 28, inStock: true, featured: true },
+        { id: 10, name: "عطر منعش", nameEn: "Fresh Perfume", category: "عطور", subCategory: "عطور رجالي", subCategoryEn: "Men's Perfumes", price: 280.00, description: "عطر خفيف ومنعش للاستخدام اليومي.", descriptionEn: "Light and fresh perfume for daily use.", image: "images/10.jpg", rating: 4.1, reviews: 12, inStock: true, featured: false },
+        { id: 11, name: "ساعة كلاسيكية فضية", nameEn: "Silver Classic Watch", category: "ساعات", subCategory: "ساعات حريمي", subCategoryEn: "Women's Watches", price: 400.00, description: "ساعة نسائية كلاسيكية بتصميم فضي أنيق.", descriptionEn: "Classic women's watch with elegant silver design.", image: "images/11.jpg", rating: 4.5, reviews: 25, inStock: true, featured: false },
+        { id: 12, name: "قلادة فضية", nameEn: "Silver Necklace", category: "إكسسوارات", subCategory: "إكسسوارات", subCategoryEn: "Accessories", price: 150.00, description: "قلادة فضية أنيقة تناسب جميع الإطلالات.", descriptionEn: "Elegant silver necklace for all looks.", image: "images/12.jpg", rating: 4.3, reviews: 18, inStock: true, featured: false }
+      ];
+
+      function App() {
+        const { t, i18n } = useTranslation();
+        const [isDarkMode, setIsDarkMode] = useState(false);
+        const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+        const [isCartOpen, setIsCartOpen] = useState(false);
+        const [selectedCategory, setSelectedCategory] = useState("الكل");
+        const [priceRangeMin, setPriceRangeMin] = useState(0);
+        const [priceRangeMax, setPriceRangeMax] = useState(1000);
+        const [products, setProducts] = useState(initialProducts);
+        const [searchQuery, setSearchQuery] = useState("");
+        const [cart, setCart] = useState([]);
+        const [wishlist, setWishlist] = useState([]);
+        const [sortBy, setSortBy] = useState("default");
+        const [isLoading, setIsLoading] = useState(false);
+        const [toast, setToast] = useState(null);
+        const [deliveryInfo, setDeliveryInfo] = useState({ address: "", city: "", postalCode: "", phone: "", newsOffers: false });
+
+        useEffect(() => {
+          const loadData = async () => {
+            setIsLoading(true);
+            try {
+              const savedCart = localStorage.getItem("cart");
+              const savedWishlist = localStorage.getItem("wishlist");
+              if (savedCart) setCart(JSON.parse(savedCart));
+              if (savedWishlist) setWishlist(JSON.parse(savedWishlist));
+              await new Promise(resolve => setTimeout(resolve, 300));
+            } catch (error) {
+              console.error(t("errorLoadingData"), error);
+            } finally {
+              setIsLoading(false);
+            }
+          };
+          loadData();
+        }, [t]);
+
+        useEffect(() => {
+          document.documentElement.classList.toggle("dark", isDarkMode);
+          document.documentElement.setAttribute("dir", i18n.language === "ar" ? "rtl" : "ltr");
+          document.documentElement.classList.toggle("rtl", i18n.language === "ar");
+          document.documentElement.classList.toggle("ltr", i18n.language === "en");
+        }, [isDarkMode, i18n.language]);
+
+        const toggleDarkMode = useCallback(() => setIsDarkMode(prev => !prev), []);
+        const toggleSidebar = useCallback(() => setIsSidebarOpen(prev => !prev), []);
+        const toggleCart = useCallback(() => setIsCartOpen(prev => !prev), []);
+        const changeLanguage = useCallback((lng) => {
+          i18n.changeLanguage(lng);
+          setSelectedCategory(lng === "ar" ? "الكل" : "All");
+        }, [i18n]);
+
+        const handleCategorySelect = useCallback((category) => {
+          setSelectedCategory(category);
+          setIsSidebarOpen(false);
+        }, []);
+
+        const handlePriceMinChange = useCallback((e) => {
+          const value = e.target.value ? Number(e.target.value) : 0;
+          if (value <= priceRangeMax) setPriceRangeMin(value);
+        }, [priceRangeMax]);
+
+        const handlePriceMaxChange = useCallback((e) => {
+          const value = e.target.value ? Number(e.target.value) : 1000;
+          if (value >= priceRangeMin) setPriceRangeMax(value);
+        }, [priceRangeMin]);
+
+        const handleSearch = useCallback((e) => setSearchQuery(e.target.value), []);
+
+        const addToCart = useCallback((product) => {
+          const existingItem = cart.find(item => item.id === product.id);
+          let updatedCart;
+          if (existingItem) {
+            updatedCart = cart.map(item =>
+              item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+            );
+          } else {
+            updatedCart = [...cart, { ...product, quantity: 1 }];
+          }
+          setCart(updatedCart);
+          localStorage.setItem("cart", JSON.stringify(updatedCart));
+          setToast({ message: t('addedToCart', { name: i18n.language === "ar" ? product.name : product.nameEn }), type: 'success' });
+          setTimeout(() => setToast(null), 2500);
+        }, [cart, t, i18n.language]);
+
+        const removeFromCart = useCallback((productId) => {
+          const updatedCart = cart.filter(item => item.id !== productId);
+          setCart(updatedCart);
+          localStorage.setItem("cart", JSON.stringify(updatedCart));
+        }, [cart]);
+
+        const updateQuantity = useCallback((productId, newQuantity) => {
+          if (newQuantity < 1) return;
+          const updatedCart = cart.map(item =>
+            item.id === productId ? { ...item, quantity: newQuantity } : item
+          );
+          setCart(updatedCart);
+          localStorage.setItem("cart", JSON.stringify(updatedCart));
+        }, [cart]);
+
+        const toggleWishlist = useCallback((product) => {
+          const isInWishlist = wishlist.some(item => item.id === product.id);
+          let updatedWishlist;
+          if (isInWishlist) {
+            updatedWishlist = wishlist.filter(item => item.id !== product.id);
+            setToast({ message: t('removedFromWishlist', { name: i18n.language === "ar" ? product.name : product.nameEn }), type: 'info' });
+          } else {
+            updatedWishlist = [...wishlist, product];
+            setToast({ message: t('addedToWishlist', { name: i18n.language === "ar" ? product.name : product.nameEn }), type: 'success' });
+          }
+          setWishlist(updatedWishlist);
+          localStorage.setItem("wishlist", JSON.stringify(updatedWishlist));
+          setTimeout(() => setToast(null), 2500);
+        }, [wishlist, t, i18n.language]);
+
+        const calculateTotal = useCallback(() => {
+          return cart.reduce((total, item) => total + (item.price * item.quantity), 0).toFixed(2);
+        }, [cart]);
+
+        const handleDeliveryChange = useCallback((e) => {
+          const { name, value, type, checked } = e.target;
+          setDeliveryInfo(prev => ({
+            ...prev,
+            [name]: type === "checkbox" ? checked : value
+          }));
+        }, []);
+
+        const placeOrder = useCallback(() => {
+          alert(`Order placed with delivery to:\nAddress: ${deliveryInfo.address}\nCity: ${deliveryInfo.city}\nPostal Code: ${deliveryInfo.postalCode}\nPhone: ${deliveryInfo.phone}\nTotal: ${calculateTotal()} ${i18n.language === "ar" ? "ج.م" : "EGP"}`);
+          setCart([]);
+          localStorage.setItem("cart", JSON.stringify([]));
+          setDeliveryInfo({ address: "", city: "", postalCode: "", phone: "", newsOffers: false });
+          setIsCartOpen(false);
+        }, [deliveryInfo, calculateTotal, i18n.language]);
+
+        // وظيفة جديدة لطلب المنتجات عبر واتساب
+        const orderViaWhatsApp = useCallback(() => {
+          const phoneNumber = "201010945324"; // رقم واتساب متجر بريق
+          const lang = i18n.language;
+          
+          // بناء نص الطلب
+          let message = `*${t('whatsappOrder')}*%0A%0A`;
+          
+          // إضافة المنتجات
+          message += `*${t('cart')}*%0A`;
+          cart.forEach(item => {
+            const name = lang === "ar" ? item.name : item.nameEn;
+            message += `- ${name} x ${item.quantity} - ${(item.price * item.quantity).toFixed(2)} ${lang === "ar" ? "ج.م" : "EGP"}%0A`;
+          });
+          
+          message += `%0A*${t('total')}:* ${calculateTotal()} ${lang === "ar" ? "ج.م" : "EGP"}%0A%0A`;
+          
+          // إضافة معلومات التوصيل
+          message += `*${t('delivery')}*%0A`;
+          message += `${t('address')}: ${deliveryInfo.address || "N/A"}%0A`;
+          message += `${t('city')}: ${deliveryInfo.city || "N/A"}%0A`;
+          message += `${t('postalCode')}: ${deliveryInfo.postalCode || "N/A"}%0A`;
+          message += `${t('phone')}: ${deliveryInfo.phone || "N/A"}%0A`;
+          
+          // إنشاء رابط واتساب
+          const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`;
+          
+          // فتح الرابط في نافذة جديدة
+          window.open(whatsappUrl, '_blank');
+        }, [cart, deliveryInfo, calculateTotal, i18n.language, t]);
+
+        // تعديل وظيفة التصفية لدعم التصنيف الهرمي
+        const filteredProducts = useMemo(() => {
+          return products.filter(product => {
+            const lang = i18n.language;
+            const productCategory = lang === "ar" ? product.category : product.category;
+            const allCategory = lang === "ar" ? "الكل" : "All";
+            
+            // تحديد الفئات الفرعية المنتمية للفئة المحددة
+            let validSubcategories = [];
+            if (selectedCategory === allCategory) {
+              // جميع الفئات
+              validSubcategories = [...Object.values(categoriesHierarchy[lang]).flat()];
+            } else if (categoriesHierarchy[lang][selectedCategory]) {
+              // الفئة الرئيسية المحددة
+              validSubcategories = categoriesHierarchy[lang][selectedCategory];
+            } else {
+              // فئة فرعية محددة
+              validSubcategories = [selectedCategory];
+            }
+            
+            // التحقق من انتماء المنتج للفئات المحددة
+            const inCategory = validSubcategories.includes(
+              lang === "ar" ? product.subCategory : product.subCategoryEn
+            );
+            
+            const inPriceRange = product.price >= priceRangeMin && product.price <= priceRangeMax;
+            const matchesSearch = (lang === "ar" ? product.name : product.nameEn).toLowerCase().includes(searchQuery.toLowerCase()) ||
+                                 (lang === "ar" ? product.description : product.descriptionEn).toLowerCase().includes(searchQuery.toLowerCase());
+            
+            return inCategory && inPriceRange && matchesSearch;
+          });
+        }, [products, selectedCategory, priceRangeMin, priceRangeMax, searchQuery, i18n.language]);
+
+        const sortedProducts = useMemo(() => {
+          return [...filteredProducts].sort((a, b) => {
+            if (sortBy === "price-low") return a.price - b.price;
+            if (sortBy === "price-high") return b.price - a.price;
+            if (sortBy === "rating") return b.rating - a.rating;
+            if (sortBy === "featured") return (b.featured ? 1 : 0) - (a.featured ? 1 : 0);
+            return a.id - b.id;
+          });
+        }, [filteredProducts, sortBy]);
+
+        const renderStars = useCallback((rating) => {
+          const stars = [];
+          const fullStars = Math.floor(rating);
+          const hasHalfStar = rating % 1 >= 0.5;
+          for (let i = 0; i < fullStars; i++) {
+            stars.push(<span key={`full-${i}`} className="text-blue-600"><i className="fas fa-star"></i></span>);
+          }
+          if (hasHalfStar) {
+            stars.push(<span key="half" className="text-blue-600"><i className="fas fa-star-half-alt"></i></span>);
+          }
+          const emptyStars = 5 - stars.length;
+          for (let i = 0; i < emptyStars; i++) {
+            stars.push(<span key={`empty-${i}`} className="text-gray-300 dark:text-gray-600"><i className="far fa-star"></i></span>);
+          }
+          return <div className="star-rating">{stars}</div>;
+        }, []);
+
+        return (
+          <div className={`min-h-screen ${i18n.language === "ar" ? "rtl" : "ltr"} ${isDarkMode ? "dark bg-gray-900 text-gray-100" : "bg-gray-50 text-gray-900"} pb-16 md:pb-0`}>
+            {toast && <div className="toast">{toast.message}</div>}
+
+            <header className={`sticky top-0 z-50 shadow-sm p-3 flex items-center justify-between ${isDarkMode ? "bg-gray-800" : "bg-white"}`}>
+              <div className="flex items-center space-x-3">
+                <button onClick={toggleSidebar} className="text-xl focus:outline-none">
+                  <i className="fas fa-bars"></i>
+                </button>
+                <h1 className="header-logo">
+                  {t('title')}
+                </h1>
+              </div>
+              <div className="flex items-center space-x-3">
+                <button
+                  onClick={() => changeLanguage(i18n.language === "ar" ? "en" : "ar")}
+                  className="text-xs bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded"
+                >
+                  {i18n.language === "ar" ? "EN" : "AR"}
+                </button>
+                <button onClick={toggleDarkMode} className="text-lg p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700">
+                  {isDarkMode ? <i className="fas fa-sun"></i> : <i className="fas fa-moon"></i>}
+                </button>
+                <div className="relative">
+                  <button onClick={toggleCart} className="text-lg p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700">
+                    <i className="fas fa-shopping-cart"></i>
+                    {cart.length > 0 && (
+                      <span className="cart-badge">{cart.reduce((total, item) => total + item.quantity, 0)}</span>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </header>
+
+            <nav className={`sticky top-0 z-40 shadow-sm p-3 flex justify-around ${isDarkMode ? "bg-gray-800" : "bg-white"}`}>
+              {[
+                { name: t('allCategories'), value: i18n.language === "ar" ? "الكل" : "All" },
+                { name: t('perfumes'), value: i18n.language === "ar" ? "عطور" : "Perfumes" },
+                { name: t('watches'), value: i18n.language === "ar" ? "ساعات" : "Watches" },
+                { name: t('accessories'), value: i18n.language === "ar" ? "إكسسوارات" : "Accessories" }
+              ].map((category) => (
+                <button
+                  key={category.value}
+                  onClick={() => handleCategorySelect(category.value)}
+                  className={`text-sm font-medium px-3 py-1 rounded ${
+                    selectedCategory === category.value
+                      ? "bg-blue-600 text-white"
+                      : isDarkMode
+                      ? "text-gray-300 hover:bg-gray-700"
+                      : "text-gray-700 hover:bg-gray-200"
+                  }`}
+                >
+                  {category.name}
+                </button>
+              ))}
+            </nav>
+
+            <div className="p-3">
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder={t('searchPlaceholder')}
+                  value={searchQuery}
+                  onChange={handleSearch}
+                  className={`w-full p-2 pr-8 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-600 text-sm ${isDarkMode ? "bg-gray-700 text-white border-gray-600" : "bg-white text-gray-900 border-gray-300"}`}
+                />
+                <i className="fas fa-search absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+              </div>
+            </div>
+
+            <div className="flex">
+              <aside className={`sidebar ${isDarkMode ? "bg-gray-800" : "bg-white"} ${isSidebarOpen ? "translate-x-0" : ""}`}>
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-lg font-bold">{t('categories')}</h2>
+                  <button onClick={toggleSidebar} className="text-xl focus:outline-none">
+                    <i className="fas fa-times"></i>
+                  </button>
+                </div>
+                <button
+                  onClick={() => handleCategorySelect(i18n.language === "ar" ? "الكل" : "All")}
+                  className={`block w-full text-right py-2 px-3 rounded mb-1 text-sm ${selectedCategory === (i18n.language === "ar" ? "الكل" : "All") ? "bg-blue-600 text-white" : isDarkMode ? "hover:bg-gray-700" : "hover:bg-gray-200"}`}
+                >
+                  {t('allCategories')}
+                </button>
+                {(i18n.language === "ar" ? categories : categoriesEn).map(category => (
+                  <button
+                    key={category}
+                    onClick={() => handleCategorySelect(category)}
+                    className={`block w-full text-right py-2 px-3 rounded mb-1 text-sm ${selectedCategory === category ? "bg-blue-600 text-white" : isDarkMode ? "hover:bg-gray-700" : "hover:bg-gray-200"}`}
+                  >
+                    {category}
+                  </button>
+                ))}
+                <div className="mt-6">
+                  <h3 className="font-semibold mb-2 text-right text-sm">{t('priceRange')}</h3>
+                  <div className="flex items-center space-x-2 mb-2">
+                    <input
+                      type="number"
+                      value={priceRangeMin}
+                      onChange={handlePriceMinChange}
+                      min="0"
+                      max={priceRangeMax}
+                      className={`w-16 p-1 border rounded text-sm ${isDarkMode ? "bg-gray-700 text-white border-gray-600" : "bg-white text-gray-900 border-gray-300"}`}
+                      placeholder={t('minPrice')}
+                    />
+                    <span className="text-sm">{i18n.language === "ar" ? "إلى" : "to"}</span>
+                    <input
+                      type="number"
+                      value={priceRangeMax}
+                      onChange={handlePriceMaxChange}
+                      min={priceRangeMin}
+                      max="10000"
+                      className={`w-16 p-1 border rounded text-sm ${isDarkMode ? "bg-gray-700 text-white border-gray-600" : "bg-white text-gray-900 border-gray-300"}`}
+                      placeholder={t('maxPrice')}
+                    />
+                    <span className="text-sm">{i18n.language === "ar" ? "ج.م" : "EGP"}</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
+                    <div
+                      className="bg-blue-600 h-2 rounded-full"
+                      style={{ width: `${(priceRangeMax / 1000) * 100}%` }}
+                    ></div>
+                  </div>
+                  <p className="mt-2 text-xs text-right">{priceRangeMin} - {priceRangeMax} {i18n.language === "ar" ? "ج.م" : "EGP"}</p>
+                </div>
+                <div className="mt-6">
+                  <h3 className="font-semibold mb-2 text-right text-sm">{t('sortBy')}</h3>
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    className={`w-full p-1 border rounded text-sm ${isDarkMode ? "bg-gray-700 text-white border-gray-600" : "bg-white text-gray-900 border-gray-300"}`}
+                  >
+                    <option value="default">{t('sortDefault')}</option>
+                    <option value="price-low">{t('sortPriceLow')}</option>
+                    <option value="price-high">{t('sortPriceHigh')}</option>
+                    <option value="rating">{t('sortRating')}</option>
+                    <option value="featured">{t('sortFeatured')}</option>
+                  </select>
+                </div>
+              </aside>
+
+              {isCartOpen && (
+                <div className="fixed inset-0 z-50 overflow-hidden">
+                  <div className="absolute inset-0 bg-black bg-opacity-50" onClick={toggleCart}></div>
+                  <div className={`fixed inset-y-0 ${i18n.language === "ar" ? "left-0" : "right-0"} w-full max-w-sm flex`}>
+                    <div className={`w-full ${isDarkMode ? "bg-gray-800" : "bg-white"}`}>
+                      <div className="flex flex-col h-full overflow-y-auto shadow-xl">
+                        <div className="flex-1 p-4">
+                          <div className="flex items-center justify-between">
+                            <h2 className="text-lg font-medium">{t('cart')}</h2>
+                            <button onClick={toggleCart} className="text-xl">
+                              <i className="fas fa-times"></i>
+                            </button>
+                          </div>
+                          <div className="mt-6">
+                            {cart.length === 0 ? (
+                              <div className="text-center py-10">
+                                <p className="text-sm">{t('emptyCart')}</p>
+                                <button
+                                  onClick={toggleCart}
+                                  className="mt-3 bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700"
+                                >
+                                  {t('continueShopping')}
+                                </button>
+                              </div>
+                            ) : (
+                              <ul className="-my-4 divide-y divide-gray-200 dark:divide-gray-700">
+                                {cart.map((item) => (
+                                  <li key={item.id} className="py-4 flex">
+                                    <div className="w-16 h-16 border rounded overflow-hidden">
+                                      <img
+                                        src={item.image}
+                                        alt={i18n.language === "ar" ? item.name : item.nameEn}
+                                        className="w-full h-full object-cover"
+                                        loading="lazy"
+                                      />
+                                    </div>
+                                    <div className="mr-3 flex-1 flex flex-col">
+                                      <div className="flex justify-between text-sm font-medium">
+                                        <h3>{i18n.language === "ar" ? item.name : item.nameEn}</h3>
+                                        <p>{(item.price * item.quantity).toFixed(2)} {i18n.language === "ar" ? "ج.م" : "EGP"}</p>
+                                      </div>
+                                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{i18n.language === "ar" ? item.category : item.categoryEn}</p>
+                                      <div className="flex-1 flex items-end justify-between text-xs">
+                                        <div className="flex items-center">
+                                          <button
+                                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                                            className="px-2 py-1 border rounded-r hover:bg-gray-200 dark:hover:bg-gray-700"
+                                          >
+                                            <i className="fas fa-minus"></i>
+                                          </button>
+                                          <span className="px-3 py-1 border">{item.quantity}</span>
+                                          <button
+                                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                                            className="px-2 py-1 border rounded-l hover:bg-gray-200 dark:hover:bg-gray-700"
+                                          >
+                                            <i className="fas fa-plus"></i>
+                                          </button>
+                                        </div>
+                                        <button
+                                          onClick={() => removeFromCart(item.id)}
+                                          className="text-red-500 hover:text-red-700"
+                                        >
+                                          {t('remove')}
+                                        </button>
+                                      </div>
+                                    </div>
+                                  </li>
+                                ))}
+                              </ul>
+                            )}
+                          </div>
+                        </div>
+                        {cart.length > 0 && (
+                          <div className={`border-t p-4 ${isDarkMode ? "border-gray-700" : "border-gray-200"}`}>
+                            <div className="flex justify-between text-sm font-medium">
+                              <p>{t('total')}</p>
+                              <p>{calculateTotal()} {i18n.language === "ar" ? "ج.م" : "EGP"}</p>
+                            </div>
+                            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{t('shippingNote')}</p>
+                            <div className="delivery-form">
+                              <h3 className="text-lg font-medium mb-2">{t('delivery')}</h3>
+                              <label>{t('address')}</label>
+                              <input
+                                type="text"
+                                name="address"
+                                value={deliveryInfo.address}
+                                onChange={handleDeliveryChange}
+                                placeholder={t('address')}
+                              />
+                              <label>{t('city')}</label>
+                              <input
+                                type="text"
+                                name="city"
+                                value={deliveryInfo.city}
+                                onChange={handleDeliveryChange}
+                                placeholder={t('city')}
+                              />
+                              <label>{t('postalCode')}</label>
+                              <input
+                                type="text"
+                                name="postalCode"
+                                value={deliveryInfo.postalCode}
+                                onChange={handleDeliveryChange}
+                                placeholder={t('postalCode')}
+                              />
+                              <label>{t('phone')}</label>
+                              <input
+                                type="text"
+                                name="phone"
+                                value={deliveryInfo.phone}
+                                onChange={handleDeliveryChange}
+                                placeholder={t('phone')}
+                              />
+                              <label className="flex items-center">
+                                <input
+                                  type="checkbox"
+                                  name="newsOffers"
+                                  checked={deliveryInfo.newsOffers}
+                                  onChange={handleDeliveryChange}
+                                />
+                                <span className="ml-2">{t('newsOffers')}</span>
+                              </label>
+                              <button onClick={placeOrder}>{t('placeOrder')}</button>
+                              
+                              {/* زر طلب عبر واتساب */}
+                              <button 
+                                onClick={orderViaWhatsApp}
+                                className="whatsapp-button mt-2"
+                              >
+                                <i className="fab fa-whatsapp mr-2"></i>
+                                {t('orderViaWhatsApp')}
+                              </button>
+                            </div>
+                            <div className="mt-3 text-center text-xs">
+                              <button onClick={toggleCart} className="text-blue-600 hover:text-blue-700">
+                                {t('continueShopping')}
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <main className="flex-1 p-3">
+                <div className="video-container">
+                  <video
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    controls
+                  >
+                    <source src="images/video.mp4" type="video/mp4" />
+                    متصفحك لا يدعم تشغيل الفيديو
+                  </video>
+                </div>
+
+                <div className="flex items-center text-xs mb-3">
+                  <span className="text-blue-600">{t('home')}</span>
+                  {selectedCategory !== (i18n.language === "ar" ? "الكل" : "All") && (
+                    <>
+                      <span className="mx-1">/</span>
+                      <span>{selectedCategory}</span>
+                    </>
+                  )}
+                </div>
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-lg font-bold section-title">
+                    {selectedCategory === (i18n.language === "ar" ? "الكل" : "All") ? t('allCategories') : selectedCategory}
+                    <span className="mr-2 text-xs text-gray-500 dark:text-gray-400">({filteredProducts.length})</span>
+                  </h2>
+                </div>
+                <section>
+                  {isLoading ? (
+                    <div className="flex justify-center py-16">
+                      <div className="loading-spinner"></div>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                        {sortedProducts.map((product, index) => (
+                          <div
+                            key={product.id}
+                            className={`relative p-3 product-card fade-in ${isDarkMode ? "bg-gray-800" : "bg-white"}`}
+                            style={{ animationDelay: `${index * 0.05}s` }}
+                          >
+                            {product.originalPrice && <span className="sale-tag">{t('sale')}</span>}
+                            <button
+                              onClick={() => toggleWishlist(product)}
+                              className="absolute top-2 right-2 text-lg z-10"
+                            >
+                              {wishlist.some(item => item.id === product.id) ? (
+                                <span className="text-red-500"><i className="fas fa-heart"></i></span>
+                              ) : (
+                                <span className="text-gray-300 dark:text-gray-600"><i className="far fa-heart"></i></span>
+                              )}
+                            </button>
+                            <div className="product-image-container mb-3">
+                              <img
+                                src={product.image}
+                                alt={i18n.language === "ar" ? product.name : product.nameEn}
+                                className="product-image"
+                                loading="lazy"
+                              />
+                            </div>
+                            <p className={`text-xs ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>{i18n.language === "ar" ? product.category : product.categoryEn}</p>
+                            <h3 className="font-semibold text-sm">{i18n.language === "ar" ? product.name : product.nameEn}</h3>
+                            <div className="flex items-center mb-1">
+                              {renderStars(product.rating)}
+                              <span className="text-xs mr-1 text-gray-500 dark:text-gray-400">({product.reviews})</span>
+                            </div>
+                            <div className="flex items-center">
+                              <p className="text-sm font-bold text-blue-600">{product.price.toFixed(2)} {i18n.language === "ar" ? "ج.م" : "EGP"}</p>
+                              {product.originalPrice && (
+                                <p className="mr-2 text-xs line-through text-gray-500 dark:text-gray-400">
+                                  {product.originalPrice.toFixed(2)} {i18n.language === "ar" ? "ج.م" : "EGP"}
+                                </p>
+                              )}
+                            </div>
+                            <div className="flex space-x-2 mt-2">
+                              <button
+                                onClick={() => addToCart(product)}
+                                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-1 rounded text-xs"
+                                disabled={!product.inStock}
+                              >
+                                {product.inStock ? t('addToCart') : t('outOfStock')}
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      {filteredProducts.length === 0 && (
+                        <div className="text-center py-10">
+                          <p className="text-sm">{t('noProducts')}</p>
+                          <button
+                            onClick={() => {
+                              setSelectedCategory(i18n.language === "ar" ? "الكل" : "All");
+                              setPriceRangeMin(0);
+                              setPriceRangeMax(1000);
+                              setSearchQuery("");
+                            }}
+                            className="mt-3 bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700"
+                          >
+                            {t('resetFilters')}
+                          </button>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </section>
+                <section className={`my-8 rounded-lg ${isDarkMode ? "bg-gray-800" : "bg-white"}`}>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
+                    <div className="feature-card">
+                      <div className="feature-icon">
+                        <i className="fas fa-shipping-fast"></i>
+                      </div>
+                      <h3 className="font-bold text-sm">{t('fastShipping')}</h3>
+                      <p className="text-xs">{t('fastShippingText')}</p>
+                    </div>
+                    <div className="feature-card">
+                      <div className="feature-icon">
+                        <i className="fas fa-credit-card"></i>
+                      </div>
+                      <h3 className="font-bold text-sm">{t('securePayment')}</h3>
+                      <p className="text-xs">{t('securePaymentText')}</p>
+                    </div>
+                    <div className="feature-card">
+                      <div className="feature-icon">
+                        <i className="fas fa-undo"></i>
+                      </div>
+                      <h3 className="font-bold text-sm">{t('easyReturns')}</h3>
+                      <p className="text-xs">{t('easyReturnsText')}</p>
+                    </div>
+                  </div>
+                </section>
+                <div className="grid grid-cols-1 gap-4 mb-8">
+                  <section>
+                    <h2 className="text-lg font-bold mb-3 section-title">{t('aboutTitle')}</h2>
+                    <div className={`p-4 rounded-lg ${isDarkMode ? "bg-gray-800" : "bg-white"}`}>
+                      <p className="text-sm">{t('aboutText1')}</p>
+                      <p className="text-sm mt-2">{t('aboutText2')}</p>
+                    </div>
+                  </section>
+                  <section>
+                    <h2 className="text-lg font-bold mb-3 section-title">{t('contactTitle')}</h2>
+                    <div className={`p-4 rounded-lg ${isDarkMode ? "bg-gray-800" : "bg-white"}`}>
+                      <input
+                        type="text"
+                        placeholder={t('namePlaceholder')}
+                        className={`w-full p-2 mb-2 border rounded text-sm ${isDarkMode ? "bg-gray-700 text-white border-gray-600" : "bg-white text-gray-900 border-gray-300"}`}
+                      />
+                      <input
+                        type="email"
+                        placeholder={t('emailPlaceholder')}
+                        className={`w-full p-2 mb-2 border rounded text-sm ${isDarkMode ? "bg-gray-700 text-white border-gray-600" : "bg-white text-gray-900 border-gray-300"}`}
+                      />
+                      <textarea
+                        placeholder={t('messagePlaceholder')}
+                        className={`w-full p-2 mb-2 border rounded text-sm ${isDarkMode ? "bg-gray-700 text-white border-gray-600" : "bg-white text-gray-900 border-gray-300"}`}
+                        rows="3"
+                      ></textarea>
+                      <button
+                        onClick={() => {
+                          setToast({ message: t('messageSent'), type: 'success' });
+                          setTimeout(() => setToast(null), 2500);
+                        }}
+                        className="w-full bg-blue-600 hover:bg-blue-700 text-white py-1 rounded text-sm"
+                      >
+                        {t('sendMessage')}
+                      </button>
+                    </div>
+                  </section>
+                </div>
+                <section className="mb-8">
+                  <h2 className="text-lg font-bold mb-3 section-title">{t('followUs')}</h2>
+                  <div className="flex justify-center gap-3">
+                    <a href="https://www.facebook.com/share/18MS1CwxtP/" target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center hover:bg-blue-700">
+                      <i className="fab fa-facebook-f"></i>
+                    </a>
+                    <a href="https://www.instagram.com/_bareeq_store_?igsh=ZHQzeHJpbm96aThj" target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full flex items-center justify-center hover:opacity-90">
+                      <i className="fab fa-instagram"></i>
+                    </a>
+                    <a href="https://tiktok.com/@bareeq_st0re" target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-black text-white rounded-full flex items-center justify-center hover:bg-gray-800">
+                      <i className="fab fa-tiktok"></i>
+                    </a>
+                    <a href="https://wa.me/201010945324" target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-green-500 text-white rounded-full flex items-center justify-center hover:bg-green-600">
+                      <i className="fab fa-whatsapp"></i>
+                    </a>
+                  </div>
+                </section>
+              </main>
+            </div>
+
+            <nav className="bottom-nav">
+              <button onClick={() => handleCategorySelect(i18n.language === "ar" ? "الكل" : "All")} className="flex flex-col items-center text-xs">
+                <i className="fas fa-home mb-1"></i>
+                {t('home')}
+              </button>
+              <button onClick={toggleSidebar} className="flex flex-col items-center text-xs">
+                <i className="fas fa-th mb-1"></i>
+                {t('categories')}
+              </button>
+              <button onClick={toggleCart} className="flex flex-col items-center text-xs relative">
+                <i className="fas fa-shopping-cart mb-1"></i>
+                {cart.length > 0 && (
+                  <span className="cart-badge">{cart.reduce((total, item) => total + item.quantity, 0)}</span>
+                )}
+                {t('cart')}
+              </button>
+              <button onClick={() => alert(t('contact'))} className="flex flex-col items-center text-xs">
+                <i className="fas fa-envelope mb-1"></i>
+                {t('contact')}
+              </button>
+            </nav>
+
+            <footer className={`p-4 ${isDarkMode ? "bg-gray-800 text-gray-300" : "bg-white text-gray-700"}`}>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                  <h3 className="text-lg font-bold mb-2">{t('title')}</h3>
+                  <p className="text-sm">{t('footerText', { year: new Date().getFullYear() })}</p>
+                </div>
+                <div>
+                  <h4 className="font-bold mb-2 text-sm">{t('quickLinks')}</h4>
+                  <ul className="space-y-1 text-sm">
+                    <li><a href="#" className="hover:text-blue-600">{t('home')}</a></li>
+                    <li><a href="#" className="hover:text-blue-600">{t('shop')}</a></li>
+                    <li><a href="#" className="hover:text-blue-600">{t('about')}</a></li>
+                    <li><a href="#" className="hover:text-blue-600">{t('contact')}</a></li>
+                  </ul>
+                </div>
+                <div>
+                  <h4 className="font-bold mb-2 text-sm">{t('newsletter')}</h4>
+                  <p className="text-xs mb-2">{t('newsletterText')}</p>
+                  <div className="flex">
+                    <input
+                      type="email"
+                      placeholder={t('emailPlaceholder')}
+                      className={`flex-1 p-2 border rounded-l text-sm ${isDarkMode ? "bg-gray-700 text-white border-gray-600" : "bg-white text-gray-900 border-gray-300"}`}
+                    />
+                    <button className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-r text-sm">
+                      {t('subscribe')}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </footer>
+          </div>
+        );
+      }
+
+      try {
+        const root = ReactDOM.createRoot(document.getElementById("root"));
+        root.render(<App />);
+      } catch (error) {
+        console.error("ReactDOM rendering error:", error);
+      }
+    } catch (error) {
+      console.error("Babel or React error:", error);
+    }
+  </script>
+</body>
+</html>
